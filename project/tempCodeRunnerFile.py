@@ -56,4 +56,3 @@ while a!=0:
 
     print(message)
     a=int(input('ingrese la tarea a realizar: '))
-
