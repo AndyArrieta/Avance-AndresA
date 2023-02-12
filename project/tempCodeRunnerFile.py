@@ -1,16 +1,46 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import sqlite3
+import requests
+import json
 import os
 import db
-#import openpyxl as
+import random
+from migrate import creart
 
 def insertData():
+    creart()
+    te=[]
+    url = 'https://api.apis.net.pe/v1/tipo-cambio-sunat'
+    re=requests.get(url)
+    t=re.json()
+    te=list(t.values()) 
+    print(te)
+    #creart()
     #obtiene la ruta absoluta
     path_=os.getcwd()+'\project\\dataTienda.csv'
     #conection a bd
-    conn=db.Conection('tienda.db')
-    cursor=conn.getCursor()
+    #conn=db.Conection('tienda.db')
+    conn=sqlite3.connect('tienda.db')
+    cursor=conn.cursor()
+
+    with open(path_,'r') as file:
+        filas=0
+        for row in file:
+            heading = next(file)
+            d=row.split(";")
+            pl=[d[3],d[7],d[8],d[4],d[6],d[9]]
+            il=[d[5],d[10]]
+            vl=[d[1]]
+            cursor.execute("INSERT INTO PRODUCTOS (NAMEPRODUCT,PRICE,CATEGORIA,NRO_SERIE,PRODUCTO,STOCKACTUAL) VALUES (?,?,?,?,?,?);",pl)
+            cursor.execute("INSERT INTO INVENTARIO (CANTIDAD,FECHA_MOVIMIENTO) VALUES (?,?);",il)
+            cursor.execute("INSERT INTO TIPCAMBIO (COMPRA,VENTA,ORIGEN,MONEDA,FECHA) VALUES (?,?,?,?,?);",te)
+            cursor.execute("INSERT INTO VENTA (PRICETOTAL) VALUES (?);",vl)
+            conn.commit()
+            filas+=1
+    conn.close()
+    print(f"Se agregaron {filas} filas")
     print(path_)
     df = pd.read_csv (path_, sep = ";") 
     ### logica para insertar 
@@ -22,17 +52,38 @@ def updateDolar():
     pass
 
 def expo_gen():
-    c=[] 
-    v=[]
+    #Listas
+    c,v,p,e,k = [],[],[],[],[]
+
+    #EXCEL*******************************
     df = pd.read_csv(os.getcwd()+'\project\\dataTienda.csv',sep=';')
     df.to_excel(os.getcwd()+'\project\\datosexcel.xlsx',sheet_name='data',encoding='utf-8',index=False)
-    #df.CANTIDAD.value_counts().plot.pie()
+    #GRÀFICO*******************************
+    #Captura de datos
     for i,fila in df.iterrows():
         c.append(fila['CATEGORIA'])
-    d=dict(zip(c,map(lambda x: c.count(x),c))) 
-    print(d)
-    v=list(d.values()) 
-    print(v)
+    #Procesamiento---------------------
+    d=dict(zip(c,map(lambda x: c.count(x),c))) #print(d)
+    v=list(d.values()) #print(v)
+    t=sum(v) #print(t)
+    for k in range(len(v)):
+        por=(v[k]/t)*100
+        p.append(por) #print(p)
+    #for l in range(len(v)):
+        #e.append(random.random()) #Explodes
+    k=list(d.keys()) #print(k)
+    #Mostrar g. circular---------------------
+    fig1, ax1=plt.subplots()
+    ax1.pie(p,labels=k,autopct='%1.1f%%',shadow=True,startangle=90)
+    ax1.axis('equal')
+    plt.show()
+    #Motrar g. barras---------------------
+    fig = plt.figure(figsize=(6,6))
+    ax=fig.add_subplot(1,1,1)
+    ax.set(title="G.Barras",xlabel="Categorias",ylabel="Cantidad"
+                            , xlim=(0,len(k)),ylim=(0,max(v)))
+    ax.bar(k,v,color='red')
+    plt.show()
 
 
 message="""
