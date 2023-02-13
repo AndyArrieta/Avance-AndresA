@@ -9,43 +9,53 @@ import db
 import random
 from migrate import creart
 
-def insertData():
+"""def insertData():
+    #CREACIÓN/ACTUALIZACIÓN DE LA TABLAS (1 USO)
     creart()
+    relle=[0,0] 
+    #MANEJO Y EXTRACCIÒN DE DATOS DE LA API-SUNAT
     te=[]
     url = 'https://api.apis.net.pe/v1/tipo-cambio-sunat'
     re=requests.get(url)
     t=re.json()
     te=list(t.values()) 
     print(te)
-    #creart()
-    #obtiene la ruta absoluta
+    #obtiene la ruta absoluta Y CONEXIÓN
     path_=os.getcwd()+'\project\\dataTienda.csv'
-    #conection a bd
-    #conn=db.Conection('tienda.db')
     conn=sqlite3.connect('tienda.db')
     cursor=conn.cursor()
-
+    #RELLENAR BASE DE DATOS CON ARCHIVO CSV
     with open(path_,'r') as file:
         filas=0
+        m=1
+        heading = next(file)
         for row in file:
-            heading = next(file)
+            del relle[0]
+            del relle[0]
+            relle.append(m)
+            relle.append(m)
             d=row.split(";")
             pl=[d[3],d[7],d[8],d[4],d[6],d[9]]
-            il=[d[5],d[10]]
-            vl=[d[1]]
+            il=[d[5],d[10],d[2]]
+            vl=[d[0],d[1],d[2]]
+            ml=vl+relle
             cursor.execute("INSERT INTO PRODUCTOS (NAMEPRODUCT,PRICE,CATEGORIA,NRO_SERIE,PRODUCTO,STOCKACTUAL) VALUES (?,?,?,?,?,?);",pl)
-            cursor.execute("INSERT INTO INVENTARIO (CANTIDAD,FECHA_MOVIMIENTO) VALUES (?,?);",il)
+            cursor.execute("INSERT INTO INVENTARIO (CANTIDAD,FECHA_MOVIMIENTO,PRODUCTOID) VALUES (?,?,?);",il)
             cursor.execute("INSERT INTO TIPCAMBIO (COMPRA,VENTA,ORIGEN,MONEDA,FECHA) VALUES (?,?,?,?,?);",te)
-            cursor.execute("INSERT INTO VENTA (PRICETOTAL) VALUES (?);",vl)
+            cursor.execute("INSERT INTO VENTA (ORDERID,PRICETOTAL,PRODUCTOID,TCID,USUARIOSID) VALUES (?,?,?,?,?);",ml)
             conn.commit()
             filas+=1
+            m+=1
     conn.close()
     print(f"Se agregaron {filas} filas")
-    print(path_)
-    df = pd.read_csv (path_, sep = ";") 
+    #print(path_)
+    #df = pd.read_csv (path_, sep = ";") 
     ### logica para insertar 
-    for i,fila in df.iterrows():
-        print(fila['ORDER_ID'])
+    #for i,fila in df.iterrows():
+        #print(fila['ORDER_ID'])
+"""
+def alterar():
+    creart()
 
 def updateDolar():
     url = 'https://api.apis.net.pe/v1/tipo-cambio-sunat' #tipo cambio sunat
@@ -97,7 +107,7 @@ a=int(input('ingrese la tarea a realizar: '))
 while a!=0:
     os.system("cls")
     if a==1:
-        insertData()
+        alterar()
     elif a==2:
         updateDolar()
     elif a==3:

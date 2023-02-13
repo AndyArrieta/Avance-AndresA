@@ -4,8 +4,8 @@ conn=sqlite3.connect('tienda.db')
 def creart():
 
     cursor_obj = conn.cursor()
-    cursor_obj.execute("DROP TABLE IF EXISTS USUARIOS")
-    table = """CREATE TABLE USUARIOS 
+    """cursor_obj.execute("DROP TABLE IF EXISTS USUARIOS")
+    table = CREATE TABLE USUARIOS 
                (ID  INTEGER PRIMARY KEY AUTOINCREMENT,
                 USUARIO VARCHAR(25),
                 PASSWORD VARCHAR(255) NOT NULL,
@@ -13,11 +13,11 @@ def creart():
                 FULLNAME VARCHAR(25) NOT NULL,
                 SCORE INT,
                 TIPOUSUARIO VARCHAR(25)
-                ); """
+                ); 
     cursor_obj.execute(table)
     cursor_obj.execute("DROP TABLE IF EXISTS PRODUCTOS")
-    table = """CREATE TABLE PRODUCTOS 
-               (ID  INTEGER PRIMARY KEY AUTOINCREMENT,
+    table = CREATE TABLE PRODUCTOS 
+               (ID  INTEGER PRIMARY KEY ,
                 NAMEPRODUCT VARCHAR(255) NOT NULL,
                 PRICE MONEY NOT NULL, 
                 CATEGORIA VARCHAR(25) NOT NULL,
@@ -26,46 +26,54 @@ def creart():
                 STOCKACTUAL INT,
                 CREACTION_PRODUCT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UPDATE_PRODUCT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                ); """
+                ); 
     cursor_obj.execute(table)
     cursor_obj.execute("DROP TABLE IF EXISTS INVENTARIO")
 
-    table="""CREATE TABLE INVENTARIO 
+    table=CREATE TABLE INVENTARIO 
              (IDMOVIMIENTO  INTEGER PRIMARY KEY AUTOINCREMENT,
               CANTIDAD INT NOT NULL,
               FECHA_MOVIMIENTO TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              PRODUCTID INT ,
-              CONSTRAINT fk_PRODUCTOS FOREIGN KEY (PRODUCTID) REFERENCES PRODUCTOS (ID)
-              ) """
+              PRODUCTOID INT ,
+              CONSTRAINT fk_PRODUCTOS FOREIGN KEY (PRODUCTOID) REFERENCES PRODUCTOS (ID)
+              ) 
     cursor_obj.execute(table)
     cursor_obj.execute("DROP TABLE IF EXISTS TIPCAMBIO")
 
-    table="""CREATE TABLE TIPCAMBIO 
+    table=CREATE TABLE TIPCAMBIO 
              (IDTC  INTEGER PRIMARY KEY AUTOINCREMENT,
               COMPRA FLOAT NOT NULL,
               VENTA FLOAT NOT NULL, 
               ORIGEN VARCHAR(25) NOT NULL,
               MONEDA VARCHAR(25) NOT NULL,
               FECHA TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-              )"""
+              )
     cursor_obj.execute(table)
 
     cursor_obj.execute("DROP TABLE IF EXISTS VENTA")
 
-    table="""CREATE TABLE VENTA 
-             (ORDERID  INTEGER PRIMARY KEY AUTOINCREMENT,
+    table=CREATE TABLE VENTA 
+             (VENTAID  INTEGER PRIMARY KEY AUTOINCREMENT,
 
-              PRODUCT_ID INT ,
-              INVENTARIO_ID INT ,
-              USUARIOS_ID INT ,
-              TC_ID INT ,
-              PRICETOTAL FLOAT NOT NULL,
-              CONSTRAINT fk_PRODUCTOS FOREIGN KEY (PRODUCT_ID) REFERENCES PRODUCTOS (ID),
-              CONSTRAINT fk_INVENTARIO FOREIGN KEY (INVENTARIO_ID) REFERENCES INVENTARIO (IDMOVIMIENTO),
-              CONSTRAINT fk_USUARIOS FOREIGN KEY (USUARIOS_ID) REFERENCES USUARIOS (ID),
-              CONSTRAINT fk_TIPCAMBIO FOREIGN KEY (TC_ID) REFERENCES TIPCAMBIO (IDTC)
-              ) """
+              PRODUCTOID INT ,
+              ORDERID INT ,
+              USUARIOSID INT ,
+              TCID INT ,
+              PRICETOTAL FLOAT ,
+              CONSTRAINT fk_PRODUCTOS FOREIGN KEY (PRODUCTOID) REFERENCES PRODUCTOS (ID),
+              CONSTRAINT fk_INVENTARIO FOREIGN KEY (ORDERID) REFERENCES INVENTARIO (IDMOVIMIENTO),
+              CONSTRAINT fk_USUARIOS FOREIGN KEY (USUARIOSID) REFERENCES USUARIOS (ID),
+              CONSTRAINT fk_TIPCAMBIO FOREIGN KEY (TCID) REFERENCES TIPCAMBIO (IDTC)
+              ) 
 
+    cursor_obj.execute(table)
+    conn.close()
+    """
+    table="""ALTER TABLE PRODUCTOS ALTER COLUMN ID INT NOT NULL AUTOINCREMENT(60) PRIMARY KEY;
+             ALTER TABLE INVENTARIO ALTER COLUMN IDMOVIMIENTO INT NOT NULL AUTOINCREMENT(60) PRIMARY KEY;
+             ALTER TABLE TIPCAMBIO ALTER COLUMN IDTC INT NOT NULL AUTOINCREMENT(60) PRIMARY KEY;
+             ALTER TABLE VENTA ALTER COLUMN VENTAID INT NOT NULL AUTOINCREMENT(60) PRIMARY KEY;
+             """
     cursor_obj.execute(table)
     conn.close()
 
