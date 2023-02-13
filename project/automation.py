@@ -7,7 +7,7 @@ import json
 import os
 import db
 import random
-from migrate import creart
+from migrate import ingresard
 
 """def insertData():
     #CREACIÓN/ACTUALIZACIÓN DE LA TABLAS (1 USO)
@@ -55,7 +55,7 @@ from migrate import creart
         #print(fila['ORDER_ID'])
 """
 def alterar():
-    creart()
+    ingresard()
 
 def updateDolar():
     url = 'https://api.apis.net.pe/v1/tipo-cambio-sunat' #tipo cambio sunat
@@ -66,11 +66,29 @@ def expo_gen():
     c,v,p,e,k = [],[],[],[],[]
 
     #EXCEL*******************************
-    df = pd.read_csv(os.getcwd()+'\project\\dataTienda.csv',sep=';')
-    df.to_excel(os.getcwd()+'\project\\datosexcel.xlsx',sheet_name='data',encoding='utf-8',index=False)
+    #df = pd.read_csv(os.getcwd()+'\project\\dataTienda.csv',sep=';')
+    conn=sqlite3.connect('tienda.db')
+    #cursor=conn.cursor()
+    #solicitar tablas
+    cons1="SELECT * FROM USUARIOS"
+    cons2="SELECT * FROM PRODUCTOS"
+    cons3="SELECT * FROM INVENTARIO"
+    cons4="SELECT * FROM TIPCAMBIO"
+    cons5="SELECT * FROM VENTA"
+    df1= pd.read_sql(cons1,conn,index_col='ID')
+    df2= pd.read_sql(cons2,conn,index_col='ID')
+    df3= pd.read_sql(cons3,conn,index_col='IDMOVIMIENTO')
+    df4= pd.read_sql(cons4,conn,index_col='IDTC')
+    df5= pd.read_sql(cons5,conn,index_col='VENTAID')
+    with pd.ExcelWriter(os.getcwd()+'\project\\datosexcel.xlsx') as writer:
+        df1.to_excel(writer,sheet_name='usuarios',encoding='utf-8',index=False)
+        df2.to_excel(writer,sheet_name='productos',encoding='utf-8',index=False)
+        df3.to_excel(writer,sheet_name='inventario',encoding='utf-8',index=False)
+        df4.to_excel(writer,sheet_name='tipcambio',encoding='utf-8',index=False)
+        df5.to_excel(writer,sheet_name='venta',encoding='utf-8',index=False)
     #GRÀFICO*******************************
     #Captura de datos
-    for i,fila in df.iterrows():
+    for i,fila in df2.iterrows():
         c.append(fila['CATEGORIA'])
     #Procesamiento---------------------
     d=dict(zip(c,map(lambda x: c.count(x),c))) #print(d)
@@ -97,7 +115,7 @@ def expo_gen():
 
 
 message="""
-    1)Insertar data:
+    1)Insertar data
     2)Actualizar data del dolar
     3)Generar reporte [Excel]
     0)Salir

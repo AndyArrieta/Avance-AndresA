@@ -1,10 +1,13 @@
 import sqlite3
-conn=sqlite3.connect('tienda.db')
+import requests
+import json
 
+conn=sqlite3.connect('tienda.db')
+"""
 def creart():
 
     cursor_obj = conn.cursor()
-    """cursor_obj.execute("DROP TABLE IF EXISTS USUARIOS")
+    cursor_obj.execute("DROP TABLE IF EXISTS USUARIOS")
     table = CREATE TABLE USUARIOS 
                (ID  INTEGER PRIMARY KEY AUTOINCREMENT,
                 USUARIO VARCHAR(25),
@@ -68,15 +71,16 @@ def creart():
 
     cursor_obj.execute(table)
     conn.close()
-    """
-    table="""ALTER TABLE PRODUCTOS ALTER COLUMN ID INT NOT NULL AUTOINCREMENT(60) PRIMARY KEY;
+"""
+"""
+    table=ALTER TABLE PRODUCTOS ALTER COLUMN ID INT NOT NULL AUTOINCREMENT(60) PRIMARY KEY;
              ALTER TABLE INVENTARIO ALTER COLUMN IDMOVIMIENTO INT NOT NULL AUTOINCREMENT(60) PRIMARY KEY;
              ALTER TABLE TIPCAMBIO ALTER COLUMN IDTC INT NOT NULL AUTOINCREMENT(60) PRIMARY KEY;
              ALTER TABLE VENTA ALTER COLUMN VENTAID INT NOT NULL AUTOINCREMENT(60) PRIMARY KEY;
-             """
+             
     cursor_obj.execute(table)
     conn.close()
-
+"""
 # comentamos las insercciones ya que solo sera parte de la creacion de tablas
 """insert =" INSERT INTO USUARIOS(USUARIO,PASSWORD,EMAIL,FULLNAME,SCORE,TIPOUSUARIO) VALUES('admin','admin','admin@datux.com','admin datux',0,'admin')"
 
@@ -88,23 +92,57 @@ conn.execute(insert)
 print("Table is Ready")
 """
 def ingresard():
-    print("Ingrese PRODUCTO")
+    #API TIPO DE CAMBIO SUNAT
+    te=[]
+    url = 'https://api.apis.net.pe/v1/tipo-cambio-sunat'
+    re=requests.get(url)
+    t=re.json()
+    te=list(t.values())
+    #####
+    print("\n<<<USUARIO>>>\n")
+    user=input('Ingrese el nombre de usuario: ')
+    contra=input('Ingrese la contraseña: ')
+    email=input('Ingrese el correo electronico: ')
+    fname=input('Ingrese NOMBRE COMPLETO: ')
+    punt=int(input('Ingrese la puntuacion: '))
+    tipo=input('Ingrese el tipo de usuario: ')
+
+    insert="INSERT INTO USUARIOS(USUARIO,PASSWORD,EMAIL,FULLNAME,SCORE,TIPOUSUARIO) VALUES(?,?,?,?,?,?);"
+    data=(user,contra,email,fname,punt,tipo)
+    conn.execute(insert,data)
+    ###
+    print("\n<<<PRODUCTO>>>\n")
     nameProduct=input('Ingrese el nombre del producto: ')
-    price=input('Ingrese el PRICE: ')
+    price=int(input('Ingrese el PRICE: '))
     nroserie=input('Ingrese el Nro de Serie: ')
     mproducto=input('Ingrese el modelo del producto: ')
     categoria=input('Ingrese el CATEGORIA: ')
     stock=int(input('Ingrese el STOCKACTUAL: '))
 
-    insert="INSERT INTO PRODUCTOS(NAMEPRODUCT,PRICE,NRO_SERIE,PRODUCTO,CATEGORIA,STOCKACTUAL) VALUES(?,?,?,?,?,?);"
-    data=(nameProduct,price,nroserie,mproducto,categoria,stock)
-    conn.execute(insert,data)
-
-    print("Ingrese datos referentes a INVENTARIO")
+    insert1="INSERT INTO PRODUCTOS(NAMEPRODUCT,PRICE,NRO_SERIE,PRODUCTO,CATEGORIA,STOCKACTUAL) VALUES(?,?,?,?,?,?);"
+    data1=(nameProduct,price,nroserie,mproducto,categoria,stock)
+    conn.execute(insert1,data1)
+    #####
+    print("\n<<<INVENTARIO>>>\n")
     cantidad=int(input('Ingrese cantidad a vender: '))
+    product=int(input('Ingrese id de producto: '))
 
-    insert="INSERT INTO INVENTARIO(CANTIDAD) VALUES(?);"
-    data=(cantidad)
-    conn.execute(insert,data)
+    insert2="INSERT INTO INVENTARIO(CANTIDAD,PRODUCTOID) VALUES(?,?);"
+    data2=(cantidad,product)
+    conn.execute(insert2,data2)
+    #####
+    print("\n<<<VENTA>>>\n")
+    ptotal=int(input('Ingrese EL PRECIO TOTAL: '))
+    producto=int(input('Ingrese id de producto: '))
+    orden=int(input('Ingrese id de la orden del inventario: '))
+    usuario=int(input('Ingrese el id del usuario: '))
+    tcambio=int(input('Ingrese el id del tipo de cambio actual: '))
 
+    insert3="INSERT INTO VENTA(PRICETOTAL,PRODUCTOID,ORDERID,USUARIOSID,TCID) VALUES(?,?,?,?,?);"
+    data3=(ptotal,producto,orden,usuario,tcambio)
+    conn.execute(insert3,data3)
+
+    insert4="INSERT INTO TIPCAMBIO (COMPRA,VENTA,ORIGEN,MONEDA,FECHA) VALUES (?,?,?,?,?);"
+    conn.execute(insert4,te)
     conn.commit()
+    conn.close()
